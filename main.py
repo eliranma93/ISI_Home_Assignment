@@ -1,5 +1,8 @@
 """CLI entry point for the Satellite Camera Data Manager."""
 import argparse
+import sys
+
+from satsim.csv_input import InputError, load_input
 
 DEFAULT_STORAGE_MB = 512
 
@@ -33,12 +36,21 @@ def parse_args(argv=None):
 
 def main(argv=None):
     args = parse_args(argv)
+
+    try:
+        pictures, passes = load_input(args.pictures, args.passes)
+    except InputError as exc:
+        for error in exc.errors:
+            print(error, file=sys.stderr)
+        return 1
+
     print("Satellite Camera Data Manager")
     print(f"  pictures file:    {args.pictures}")
     print(f"  passes file:      {args.passes}")
     print(f"  storage capacity: {args.storage_mb} MB")
     print(f"  storage policy:   {args.storage_policy}")
     print(f"  downlink policy:  {args.downlink_policy}")
+    print(f"Loaded: {len(pictures)} pictures, {len(passes)} passes")
     print("(stub - simulation not yet implemented)")
     return 0
 

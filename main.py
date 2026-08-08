@@ -11,6 +11,23 @@ from satsim.storage import Storage
 
 DEFAULT_STORAGE_MB = 512
 
+# (header label, width, alignment) - shared between the header row and every data
+# row so columns line up. DETAIL is appended separately, unpadded.
+DUMP_COLUMNS = [
+    ("MINUTE", 10, "<"),
+    ("EVENT", 14, "<"),
+    ("PIC", 5, "<"),
+    ("SIZE", 6, ">"),
+    ("IMPORTANCE", 11, "<"),
+    ("TAKEN@", 10, "<"),
+    ("STORAGE", 10, "<"),
+]
+
+
+def _format_dump_row(values: list[str]) -> str:
+    cells = [f"{value:{align}{width}}" for value, (_, width, align) in zip(values, DUMP_COLUMNS)]
+    return " ".join(cells)
+
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
@@ -71,28 +88,39 @@ def main(argv=None):
         downlink_policy=ArrivalOrderDownlink(),
     )
     events = simulator.run()
-    print(f"Simulated: {len(events)} events, peak storage {storage.peak_used_mb}/{args.storage_mb} MB")
+    total_sent_mb = sum(
+        int(event.detail)
+        for event in events
+        if event.kind in (EventKind.SEND_START, EventKind.SEND_PROGRESS, EventKind.SEND_COMPLETE)
+    )
+    print(
+        f"Simulated: {len(events)} events, peak storage {storage.peak_used_mb}/{args.storage_mb} MB, "
+        f"total sent {total_sent_mb} MB"
+    )
     print("(policy selection and full report pending Phase 3/4 - placeholder policies used)")
 
     if args.dump_events:
         pictures_by_index = {picture.index: picture for picture in pictures}
-        print(
-            f"{'MINUTE':<10}{'EVENT':<15}{'PIC':<5}{'SIZE':>6}  {'IMPORTANCE':<11}{'TAKEN@':<12}"
-            f"{'STORAGE':<16}DETAIL"
-        )
+        header_values = [name for name, _, _ in DUMP_COLUMNS]
+        print(_format_dump_row(header_values) + " DETAIL")
+
         used_mb = 0
         for event in events:
             picture = pictures_by_index[event.picture_index]
-            if event.kind in (EventKind.STORED,):
+            if event.kind == EventKind.STORED:
                 used_mb += picture.size_mb
             elif event.kind in (EventKind.EVICTED, EventKind.SEND_COMPLETE):
                 used_mb -= picture.size_mb
-            print(
-                f"[min {event.minute:03d}] {event.kind.value:<14} #{event.picture_index:02d}  "
-                f"{picture.size_mb:>3}MB {picture.importance.value:<6} taken@{picture.take_at_min:03d}  "
-                f"storage {used_mb:>3}/{args.storage_mb}MB  "
-                f"{event.detail}"
-            )
+            row_values = [
+                f"[min {event.minute:03d}]",
+                event.kind.value,
+                f"#{event.picture_index:02d}",
+                f"{picture.size_mb}MB",
+                picture.importance.value,
+                f"taken@{picture.take_at_min:03d}",
+                f"{used_mb}/{args.storage_mb}MB",
+            ]
+            print(_format_dump_row(row_values) + " " + event.detail)
 
     return 0
 

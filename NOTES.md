@@ -16,3 +16,11 @@
 - Quoted CSV fields and embedded commas are not supported, per `PLAN.md` — a value
   containing a comma is misread as an extra column. To be documented in the README
   (Phase 6).
+
+## Out-of-plan additions
+
+- `--dump-events`: prints every raw `Event` record, one per line. Added outside the
+  phase plan as a debug aid for reviewing the engine's output before Phase 4's real
+  timeline report exists. Deliberately not the Phase 4 format (no fixed-width columns,
+  no storage-level annotation, no importance/size lookup) - just a thin repr of the
+  event log for sanity-checking.

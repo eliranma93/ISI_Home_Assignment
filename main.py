@@ -35,6 +35,11 @@ def parse_args(argv=None):
         default="density_fractional",
         help="Downlink send-order policy (default: density_fractional)",
     )
+    parser.add_argument(
+        "--dump-events",
+        action="store_true",
+        help="Debug aid: print every raw Event record. Not the Phase 4 timeline report.",
+    )
     return parser.parse_args(argv)
 
 
@@ -67,6 +72,11 @@ def main(argv=None):
     events = simulator.run()
     print(f"Simulated: {len(events)} events, peak storage {storage.peak_used_mb}/{args.storage_mb} MB")
     print("(policy selection and full report pending Phase 3/4 - placeholder policies used)")
+
+    if args.dump_events:
+        for event in events:
+            print(f"[min {event.minute:03d}] {event.kind.value:<14} #{event.picture_index:02d}  {event.detail}")
+
     return 0
 
 

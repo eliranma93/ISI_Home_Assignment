@@ -74,8 +74,14 @@ def main(argv=None):
     print("(policy selection and full report pending Phase 3/4 - placeholder policies used)")
 
     if args.dump_events:
+        pictures_by_index = {picture.index: picture for picture in pictures}
         for event in events:
-            print(f"[min {event.minute:03d}] {event.kind.value:<14} #{event.picture_index:02d}  {event.detail}")
+            picture = pictures_by_index[event.picture_index]
+            print(
+                f"[min {event.minute:03d}] {event.kind.value:<14} #{event.picture_index:02d}  "
+                f"{picture.size_mb:>3}MB {picture.importance.value:<6} taken@{picture.take_at_min:03d}  "
+                f"{event.detail}"
+            )
 
     return 0
 

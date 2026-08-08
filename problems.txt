@@ -1,0 +1,20 @@
+*Problems*
+* what is the order of each variable per picture ? (importance,size ,time)
+* is Size is really matter ? if the size it low maybe there is not enough data ?
+* how much the time is really matter ?
+* how much we carry about memory complexity or time complexity ?
+* is this common problem ? there is exist algorithm that can dill with problem like this ?
+* the data can be sent on chunks ?(can I repeat sending the old picture that part of it sent before ?)
+
+*My steps*
+--first 2 hours--
+I spend time how can I solve it with diffrent DB's and scores for evict/recive and sending. main choice was priority Q
+-- After 1.5 hour of reserch using claude --
+* I realize that maybe there is an existed algorithm for problem from this kind - start reserch for maximum 1 hour.
+
+Taken assumption:
+	* Cant compress the pictures
+	* Can send the pictures in chunks
+	* The time of link is unknown 
+	* We dont know when the link will be availbel
+	* we dont know how long will be the link

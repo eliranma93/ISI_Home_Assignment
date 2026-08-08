@@ -17,6 +17,23 @@
   containing a comma is misread as an extra column. To be documented in the README
   (Phase 6).
 
+## Phase 3
+
+- `ValueDensityStorage._eviction_candidates` ranks every not-yet-sent picture ahead of
+  every partially-sent one (each group ordered by density ascending), so a picture with
+  `sent_mb > 0` is only ever evicted if it is the only remaining candidate. Rationale: a
+  partial send has already spent real, non-refundable transmission budget on that
+  picture; discarding it now writes off bandwidth already used, whereas discarding an
+  untouched picture writes off nothing sent so far.
+- `ImportanceThenAgeStorage` (baseline) has no "is this worth it" admission check at
+  all - it always evicts enough lowest-importance/oldest residents to fit the incoming
+  picture, even if the incoming picture is worth less than what it displaces (confirmed
+  in testing: it evicts a 75MB `medium` picture to make room for a 40MB `low` one).
+  `ValueDensityStorage`'s explicit `admit only if value(incoming) > evicted value` gate
+  is what actually fixes this - the baseline's naivety here is deliberate, per
+  `PLAN.md`, and is a direct, presentable illustration of why the value-density policy
+  is the improvement.
+
 ## Out-of-plan additions
 
 - `--dump-events`: prints every raw `Event` record, one per line. Added outside the

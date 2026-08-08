@@ -5,8 +5,9 @@ import sys
 from satsim.csv_input import InputError, load_input
 from satsim.engine import Simulator
 from satsim.models import EventKind
-from satsim.policies.downlink_policy import ArrivalOrderDownlink
-from satsim.policies.storage_policy import FitsOrSkipStorage
+from satsim.policies.downlink_policy import DensityFractionalDownlink, DownlinkPolicy, ImportanceFirstAtomic
+from satsim.policies.storage_policy import ImportanceThenAgeStorage, StoragePolicy, ValueDensityStorage
+from satsim.policies.value import ImportanceValue, ValueFunction
 from satsim.storage import Storage
 
 DEFAULT_STORAGE_MB = 512
@@ -27,6 +28,18 @@ DUMP_COLUMNS = [
 def _format_dump_row(values: list[str]) -> str:
     cells = [f"{value:{align}{width}}" for value, (_, width, align) in zip(values, DUMP_COLUMNS)]
     return " ".join(cells)
+
+
+def _build_storage_policy(name: str, value_function: ValueFunction) -> StoragePolicy:
+    if name == "importance_age":
+        return ImportanceThenAgeStorage()
+    return ValueDensityStorage(value_function)
+
+
+def _build_downlink_policy(name: str, value_function: ValueFunction) -> DownlinkPolicy:
+    if name == "importance_first":
+        return ImportanceFirstAtomic()
+    return DensityFractionalDownlink(value_function)
 
 
 def parse_args(argv=None):
@@ -79,13 +92,14 @@ def main(argv=None):
     print(f"  downlink policy:  {args.downlink_policy}")
     print(f"Loaded: {len(pictures)} pictures, {len(passes)} passes")
 
+    value_function = ImportanceValue()
     storage = Storage(capacity_mb=args.storage_mb)
     simulator = Simulator(
         pictures=pictures,
         passes=passes,
         storage=storage,
-        storage_policy=FitsOrSkipStorage(),
-        downlink_policy=ArrivalOrderDownlink(),
+        storage_policy=_build_storage_policy(args.storage_policy, value_function),
+        downlink_policy=_build_downlink_policy(args.downlink_policy, value_function),
     )
     events = simulator.run()
     total_sent_mb = sum(
@@ -97,7 +111,7 @@ def main(argv=None):
         f"Simulated: {len(events)} events, peak storage {storage.peak_used_mb}/{args.storage_mb} MB, "
         f"total sent {total_sent_mb} MB"
     )
-    print("(policy selection and full report pending Phase 3/4 - placeholder policies used)")
+    print("(full formatted timeline and summary report pending Phase 4)")
 
     if args.dump_events:
         pictures_by_index = {picture.index: picture for picture in pictures}

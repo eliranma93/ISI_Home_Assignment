@@ -22,3 +22,21 @@ class Pass:
     start_min: int
     end_min: int
     speed_mb_per_min: int
+
+
+class EventKind(Enum):
+    TAKEN = "TAKEN"
+    STORED = "STORED"
+    SKIPPED = "SKIPPED"
+    EVICTED = "EVICTED"
+    SEND_START = "SEND_START"
+    SEND_PROGRESS = "SEND_PROGRESS"
+    SEND_COMPLETE = "SEND_COMPLETE"
+
+
+@dataclass(frozen=True)
+class Event:
+    minute: int
+    kind: EventKind
+    picture_index: int
+    detail: str = ""

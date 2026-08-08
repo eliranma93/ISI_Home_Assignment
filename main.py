@@ -3,6 +3,10 @@ import argparse
 import sys
 
 from satsim.csv_input import InputError, load_input
+from satsim.engine import Simulator
+from satsim.policies.downlink_policy import ArrivalOrderDownlink
+from satsim.policies.storage_policy import FitsOrSkipStorage
+from satsim.storage import Storage
 
 DEFAULT_STORAGE_MB = 512
 
@@ -51,7 +55,18 @@ def main(argv=None):
     print(f"  storage policy:   {args.storage_policy}")
     print(f"  downlink policy:  {args.downlink_policy}")
     print(f"Loaded: {len(pictures)} pictures, {len(passes)} passes")
-    print("(stub - simulation not yet implemented)")
+
+    storage = Storage(capacity_mb=args.storage_mb)
+    simulator = Simulator(
+        pictures=pictures,
+        passes=passes,
+        storage=storage,
+        storage_policy=FitsOrSkipStorage(),
+        downlink_policy=ArrivalOrderDownlink(),
+    )
+    events = simulator.run()
+    print(f"Simulated: {len(events)} events, peak storage {storage.peak_used_mb}/{args.storage_mb} MB")
+    print("(policy selection and full report pending Phase 3/4 - placeholder policies used)")
     return 0
 
 

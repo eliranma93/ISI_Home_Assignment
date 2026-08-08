@@ -4,6 +4,7 @@ import sys
 
 from satsim.csv_input import InputError, load_input
 from satsim.engine import Simulator
+from satsim.models import EventKind
 from satsim.policies.downlink_policy import ArrivalOrderDownlink
 from satsim.policies.storage_policy import FitsOrSkipStorage
 from satsim.storage import Storage
@@ -75,11 +76,21 @@ def main(argv=None):
 
     if args.dump_events:
         pictures_by_index = {picture.index: picture for picture in pictures}
+        print(
+            f"{'MINUTE':<10}{'EVENT':<15}{'PIC':<5}{'SIZE':>6}  {'IMPORTANCE':<11}{'TAKEN@':<12}"
+            f"{'STORAGE':<16}DETAIL"
+        )
+        used_mb = 0
         for event in events:
             picture = pictures_by_index[event.picture_index]
+            if event.kind in (EventKind.STORED,):
+                used_mb += picture.size_mb
+            elif event.kind in (EventKind.EVICTED, EventKind.SEND_COMPLETE):
+                used_mb -= picture.size_mb
             print(
                 f"[min {event.minute:03d}] {event.kind.value:<14} #{event.picture_index:02d}  "
                 f"{picture.size_mb:>3}MB {picture.importance.value:<6} taken@{picture.take_at_min:03d}  "
+                f"storage {used_mb:>3}/{args.storage_mb}MB  "
                 f"{event.detail}"
             )
 

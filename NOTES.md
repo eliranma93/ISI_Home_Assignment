@@ -34,10 +34,22 @@
   `PLAN.md`, and is a direct, presentable illustration of why the value-density policy
   is the improvement.
 
+## Phase 4
+
+- Line count is now ~830 across `satsim/` + `main.py`, above `CLAUDE.md`'s "roughly 500
+  lines" estimate. Growth is driven by explicitly-required scope: two concrete classes
+  per policy interface, CSV validation that collects every error with a line number
+  (not just the first), and a reporting module covering timeline + summary + an
+  unreachable section derived at runtime. Nothing here is speculative or unrequested;
+  flagging the total for visibility, not proposing to cut anything.
+- `report.py` sits at 148 lines, one line under the ~150 module guideline.
+
 ## Out-of-plan additions
 
 - `--dump-events`: prints every raw `Event` record, one per line. Added outside the
   phase plan as a debug aid for reviewing the engine's output before Phase 4's real
   timeline report exists. Deliberately not the Phase 4 format (no fixed-width columns,
   no storage-level annotation, no importance/size lookup) - just a thin repr of the
-  event log for sanity-checking.
+  event log for sanity-checking. Moved to its own `debug_dump.py` at the repo root once
+  it pushed `main.py` over the ~150-line module guideline - kept out of `satsim/` since
+  it isn't part of `CLAUDE.md`'s fixed architecture.

@@ -44,6 +44,25 @@
   flagging the total for visibility, not proposing to cut anything.
 - `report.py` sits at 148 lines, one line under the ~150 module guideline.
 
+## Phase 5
+
+- Tests use `tempfile`, `pathlib`, `io`, and `contextlib` in addition to `unittest`.
+  `CLAUDE.md`'s "Modules used" list (`csv, dataclasses, enum, abc, argparse, typing,
+  unittest`) is read as scoping the *shipped application* (`satsim/`, `main.py`,
+  `debug_dump.py`), which stays within it - not test-only imports, since the plan's own
+  test descriptions ("small synthetic CSV fixtures written to a temp directory")
+  necessarily require `tempfile`.
+- Tests 1-7 exercise the engine/storage/policies directly against synthetic CSV
+  fixtures (via a shared `tests/helpers.py`); tests 8-10 go through `main.main()` with
+  stdout/stderr captured, since "exit non-zero" and "clean run" are CLI-level
+  contracts. Deliberate mix, not an inconsistency.
+- Test 2/3's fixtures originally used a pass window ([20,30)) that fell *inside* the
+  simulated run, so the picture left standing after the eviction decision then got
+  legitimately sent away by that window before the assertions ran - failing for the
+  wrong reason (delivery, not eviction). Fixed by moving the window to before both
+  arrivals ([0,1)) so nothing can ever be transmitted, isolating the storage decision
+  under test.
+
 ## Out-of-plan additions
 
 - `--dump-events`: prints every raw `Event` record, one per line. Added outside the

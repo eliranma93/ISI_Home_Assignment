@@ -63,6 +63,24 @@
   arrivals ([0,1)) so nothing can ever be transmitted, isolating the storage decision
   under test.
 
+## Phase 6
+
+- Nothing from `PLAN.md`'s "If scope must be reduced" list was cut: `--quiet` shipped
+  in Phase 4, all 10 tests shipped in Phase 5, and both the `ImportanceThenAgeStorage`
+  baseline and its interface shipped in Phase 3. No reductions were necessary.
+- Cosmetic, not fixed: `EVICTED`/`SKIPPED` detail text built from `f"for #{index}"` in
+  `engine.py` is not zero-padded (renders `for #9`, not `for #09`), while every other
+  picture-index column in the timeline is zero-padded to two digits (`#09`). Noticed
+  during the Phase 4 review; left as-is since fixing it means either parsing engine-
+  recorded detail strings back into numbers in `report.py` (fragile) or having the
+  engine format for display (violates "the engine records, it never prints").
+- `AI_NOTES.md` was not maintained incrementally despite `CLAUDE.md`'s explicit
+  instruction to append from the first commit - it sat empty through Phases 0-5 and
+  was reconstructed at Phase 6 from git history and session context instead. Flagged
+  to the user before writing it; see `AI_NOTES.md` itself for the full account and
+  disclaimer. This is the one place this project didn't follow its own rules, and it's
+  recorded here for that reason rather than smoothed over.
+
 ## Out-of-plan additions
 
 - `--dump-events`: prints every raw `Event` record, one per line. Added outside the

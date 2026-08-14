@@ -22,8 +22,8 @@ explained and modified live, in front of reviewers.
 This is a small program — roughly 500 lines across all modules. Scope creep is the main
 failure mode here, so these are hard rules:
 
-- **Build exactly what `PLAN.md` specifies. Nothing else.** If a feature seems useful but
-  isn't in the plan, add a line to `NOTES.md` describing it and move on.
+- **Build exactly what `docs/PLAN.md` specifies. Nothing else.** If a feature seems useful
+  but isn't in the plan, add a line to `docs/NOTES.md` describing it and move on.
 - If any single module exceeds ~150 lines, it is doing too much — split it or cut a feature.
 - No abstraction that has exactly one use and no second implementation planned. The three
   policy interfaces are the exception, and they are justified because the assignment is
@@ -108,10 +108,10 @@ hypothetical.
 
 ## AI disclosure
 
-The brief requires noting where AI was used and what was changed. Maintain `AI_NOTES.md` from
-the first commit — append as you go, do not reconstruct it at the end.
+The brief requires noting where AI was used and what was changed. Maintain `docs/AI_NOTES.md`
+from the first commit — append as you go, do not reconstruct it at the end.
 
 ## Definition of done for each phase
 
-The phase's acceptance criteria in `PLAN.md` pass, `NOTES.md` records any limitation
+The phase's acceptance criteria in `docs/PLAN.md` pass, `docs/NOTES.md` records any limitation
 accepted, and there is one commit per phase.

@@ -1,10 +1,9 @@
 # Satellite Camera Data Manager
 
-Simulates one orbit of a small satellite: pictures are taken on a fixed schedule,
-stored in memory that's smaller than the data produced, and downlinked during two
-short ground-station passes with limited bandwidth. Storage and link capacity are
-**deliberately oversubscribed** - the interesting part is the keep / discard /
-send-order decisions, not the plumbing.
+A small satellite takes pictures, tries to stash them in memory that's too small for
+all of them, and downlinks what it can during two short ground-station passes with a
+slow link. Storage and bandwidth are **deliberately oversubscribed** - the interesting part is
+the keep / discard / send-order decisions, not the code that runs it.
 
 Python 3.11+, standard library only. No installation step.
 
@@ -30,6 +29,32 @@ Run the test suite with:
 python -m unittest discover tests
 ```
 
+10 tests, all against synthetic CSV fixtures except the last:
+
+| # | Covers |
+|---|---|
+| 1 | Picture larger than total storage capacity - skipped, never stored |
+| 2 | Picture larger than free space, higher value than the eviction set - evicts and stores |
+| 3 | Same, but lower value than the eviction set - skipped, incumbents survive |
+| 4 | Window ends mid-picture - partial send recorded, remainder resumes next window |
+| 5 | Picture taken at exactly `window_start` - sendable that same minute |
+| 6 | Picture taken at exactly `window_end` - **not** sendable (half-open interval) |
+| 7 | Picture taken after the last window closes - stored, reported unreachable |
+| 8 | Empty `pictures.csv` - clean run, zeroed summary, exit 0 |
+| 9 | Malformed row - every error reported, exit non-zero |
+| 10 | Determinism - the real dataset run twice, identical output strings |
+
+Tests 1-7 exercise the engine/storage/policies directly via a shared `tests/helpers.py`;
+8-10 go through `main.main()` with stdout/stderr captured, since "exits non-zero" and "a
+clean run" are CLI-level contracts. Not covered: eviction of an already-partially-sent
+picture specifically (see "Evicting a partially-sent picture" below) - that path is
+exercised by construction and the policy's docstring, not by an automated test.
+
+**In VS Code:** `.vscode/launch.json` ships with four ready-to-go debug configurations -
+the real data with the default policies, the real data with both baselines, the real
+data with `--dump-events`, and `unittest discover` - so you can set a breakpoint and hit
+F5 instead of typing flags.
+
 ## CLI flags
 
 | Flag | Default | Meaning |
@@ -40,7 +65,7 @@ python -m unittest discover tests
 | `--storage-policy` | `value_density` | `importance_age` (baseline) or `value_density` (primary) |
 | `--downlink-policy` | `density_fractional` | `importance_first` (baseline) or `density_fractional` (primary) |
 | `--quiet` | off | Print only the summary block (for building a comparison table) |
-| `--dump-events` | off | Debug aid: print every raw internal event. Not the report below - see `NOTES.md` |
+| `--dump-events` | off | Debug aid: print every raw internal event. Not the report below - see `docs/NOTES.md` |
 
 ## The four policy combinations
 
@@ -63,7 +88,10 @@ class.
   picture across this window and the next.
 
 Running all four combinations with `--quiet` against the provided data produces a
-comparison table for "total value delivered" (what the policies actually optimize):
+comparison table for "total value delivered" (what the policies actually optimize).
+Each row is the `total value delivered` line from that combination's summary block -
+the sum of `value_of(picture)` (high=100/medium=50/low=20) over every picture that
+reached `SEND_COMPLETE`, i.e. was fully received on the ground, not just started:
 
 | storage | downlink | total value delivered |
 |---|---|---|
@@ -74,6 +102,23 @@ comparison table for "total value delivered" (what the policies actually optimiz
 
 Each primary policy improves on its baseline counterpart individually, and the two
 primaries together deliver the most value - a real result, not a cosmetic one.
+
+## Watching it run live
+
+The real data exercises both of the interesting failure modes unprompted, with the
+default policies and no special flags - visible directly in
+`python main.py --pictures pictures.csv --passes passes.csv`'s timeline:
+
+- **Storage fills before the first window even opens.** By minute 20, storage is at
+  500/512 MB. At minute 21, a 40MB `low`-importance picture arrives and is skipped -
+  `value 20 does not exceed eviction-set value 50` - four minutes before the first
+  pass opens at minute 25.
+- **Both windows exhaust their budget mid-picture.** In window 1 (`[25,30)`), e.g.
+  picture #07 starts sending at minute 26 (56 of 121 MB) and completes at minute 27
+  (the remaining 65 MB) - a real chunk-and-resume, not a hypothetical one. Window 2
+  (`[70,75)`) is saturated almost every tick: #24 spans minutes 70→71, #23 spans
+  71→72, #12 spans 72→73, each carrying a remainder into the next minute because that
+  minute's budget ran out first.
 
 ## Decisions and tradeoffs
 
@@ -121,6 +166,28 @@ fractional fill is optimal for *delivered* value at all: without resume, a pictu
 cut off mid-transmission that never gets to finish would be counted as delivered
 value it never actually provided on the ground.
 
+**Evicting a partially-sent picture.** A picture with `sent_mb > 0` has already spent
+real, non-refundable transmission budget - discarding it now writes off bandwidth
+already used, unlike discarding an untouched picture. `ValueDensityStorage` resolves
+this by ranking every untouched resident ahead of every partially-sent one (each
+group still ordered by density), so a partially-sent picture is only evicted if it's
+the only candidate left.
+
+## Future work
+
+**Deliberately out of scope**, per `CLAUDE.md`: an offline MILP/CP-SAT solver for a
+clairvoyant optimum, which would let the online policies' 1270-value result be stated
+as "N% of optimal" instead of just "better than baseline."
+
+**What I'd add next, given two more days:**
+
+- **Progressive image quality layers**, so downlink stops being all-or-nothing per
+  picture - a picture cut off mid-transmission could still deliver a usable
+  low-resolution pass instead of nothing.
+- **Multi-window lookahead**, reserving some of window 1's budget for high-value
+  arrivals known to be coming before window 2 opens, rather than treating each
+  window's allocation independently.
+
 ## Output
 
 Without `--quiet`: a chronological timeline (one line per event), a summary block,
@@ -128,5 +195,13 @@ and an "Unreachable" section listing pictures still resident at the end of the r
 and, separately, pictures taken after the last window closed (derived from the pass
 list at runtime - never a hardcoded count). With `--quiet`: only the summary block.
 
-See `NOTES.md` for every simplification and limitation accepted along the way, and
-`PRESENTATION.md` for the assignment's four required talking points.
+See `docs/NOTES.md` for every simplification and limitation accepted along the way.
+
+## AI disclosure
+
+`docs/PLAN.md` and `CLAUDE.md` were authored by the user before this session, from
+their own research into the problem. Claude Code then implemented `docs/PLAN.md`
+phase by phase, one commit per phase, each reviewed and approved before the next
+began; a few implementation bugs were introduced and self-caught along the way (see
+below). See `docs/AI_NOTES.md` for the full account, including what was changed and
+self-caught mistakes.

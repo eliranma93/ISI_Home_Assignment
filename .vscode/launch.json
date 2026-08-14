@@ -1,0 +1,60 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "main.py (real data, defaults)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--pictures", "pictures.csv",
+                "--passes", "passes.csv",
+                "--storage-mb", "512",
+                "--storage-policy", "value_density",
+                "--downlink-policy", "density_fractional"
+            ]
+        },
+        {
+            "name": "main.py (baseline policies)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--pictures", "pictures.csv",
+                "--passes", "passes.csv",
+                "--storage-mb", "512",
+                "--storage-policy", "importance_age",
+                "--downlink-policy", "importance_first"
+            ]
+        },
+        {
+            "name": "main.py (real data, dump events)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--pictures", "pictures.csv",
+                "--passes", "passes.csv",
+                "--storage-mb", "512",
+                "--storage-policy", "value_density",
+                "--downlink-policy", "density_fractional",
+                "--dump-events"
+            ]
+        },
+        {
+            "name": "unittest discover",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "unittest",
+            "args": ["discover", "tests"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

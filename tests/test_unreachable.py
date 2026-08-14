@@ -1,5 +1,5 @@
 """Picture taken after the last window closes: stored, reported as
-unreachable (PLAN.md Phase 5, test 7)."""
+unreachable (docs/PLAN.md Phase 5, test 7)."""
 import tempfile
 import unittest
 from pathlib import Path

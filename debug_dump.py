@@ -1,4 +1,4 @@
-"""Out-of-plan debug aid: print every raw Event record. See NOTES.md.
+"""Out-of-plan debug aid: print every raw Event record. See docs/NOTES.md.
 
 Deliberately separate from satsim/report.py, which is the real Phase 4
 timeline - this is a lower-level view (every SEND_START/PROGRESS/COMPLETE

@@ -1,5 +1,5 @@
 """Storage-policy edge cases: capacity limits and value-based eviction
-(PLAN.md Phase 5, tests 1-3)."""
+(docs/PLAN.md Phase 5, tests 1-3)."""
 import tempfile
 import unittest
 from pathlib import Path

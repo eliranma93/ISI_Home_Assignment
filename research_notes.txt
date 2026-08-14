@@ -1,0 +1,20 @@
+*Problems*
+* What is the priority order of the variables per picture? (importance, size, time)
+* Does size really matter? If the size is low, maybe there isn't much data at stake?
+* How much does time really matter?
+* How much do we care about memory complexity or time complexity?
+* Is this a common problem? Does an algorithm already exist that deals with a problem like this?
+* Can the data be sent in chunks? (Can I resume sending an old picture whose part was already sent?)
+
+*My steps*
+--first 2 hours--
+I spent time thinking about how to solve it with different data structures and scores for eviction/reception/sending. My main choice was a priority queue.
+-- After 1.5 hours of research using Claude --
+* I realized there might be an existing algorithm for a problem of this kind - started researching for a maximum of 1 hour.
+-- implementation 6 hours--
+Assumptions taken:
+	* Can't compress the pictures
+	* Can send the pictures in chunks
+	* The link's active time is unknown
+	* We don't know when the link will be available
+	* We don't know how long the link will last

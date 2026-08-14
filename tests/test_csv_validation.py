@@ -1,5 +1,5 @@
 """CLI-level input edge cases: empty pictures.csv and malformed rows
-(PLAN.md Phase 5, tests 8-9)."""
+(docs/PLAN.md Phase 5, tests 8-9)."""
 import contextlib
 import io
 import tempfile

@@ -114,7 +114,7 @@ class ValueDensityStorage(StoragePolicy):
     def _eviction_candidates(self, storage: Storage, now_min: int) -> list[StoredPicture]:
         # A partially sent picture is only evicted if it is the only
         # candidate: rank every untouched picture ahead of every started one,
-        # each group ordered by density ascending. See NOTES.md.
+        # each group ordered by density ascending. See docs/NOTES.md.
         untouched = [stored for stored in storage.all() if stored.sent_mb == 0]
         started = [stored for stored in storage.all() if stored.sent_mb > 0]
         return sorted_ascending_by_density(untouched, self._value_function, now_min) + sorted_ascending_by_density(

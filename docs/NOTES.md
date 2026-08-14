@@ -81,6 +81,25 @@
   disclaimer. This is the one place this project didn't follow its own rules, and it's
   recorded here for that reason rather than smoothed over.
 
+## Post-Phase-6 documentation reorganization
+
+- `PLAN.md`, `NOTES.md`, and `AI_NOTES.md` moved into `docs/`, keeping only `CLAUDE.md`
+  (auto-loaded by Claude Code from the project root every session) and `README.md`
+  (the repo's landing page) at the top level. Root now shows only the program and the
+  two docs a reviewer needs immediately; process/planning docs are one click away.
+
+## Post-Phase-6 documentation consolidation
+
+- `PRESENTATION.md` was removed. `PLAN.md`'s Phase 6 called for it as a separate file,
+  but the assignment brief only asks for `README.md` - a second file answering
+  essentially the same four questions was assessed as overhead. Its unique content
+  (the live-run walkthrough, the partial-send eviction rationale, and the "what I'd
+  add next" list) was folded into `README.md` under new "Watching it run live" and
+  "Future work" sections, plus one new bullet under "Decisions and tradeoffs". Content
+  that was already duplicated in `README.md` (the comparison table, the float-
+  determinism explanation, the GDS `L`-term and quoted-CSV limitations) was dropped
+  rather than kept in two places.
+
 ## Out-of-plan additions
 
 - `--dump-events`: prints every raw `Event` record, one per line. Added outside the

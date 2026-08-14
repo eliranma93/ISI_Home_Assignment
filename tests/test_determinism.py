@@ -1,4 +1,4 @@
-"""Determinism against the real dataset (PLAN.md Phase 5, test 10)."""
+"""Determinism against the real dataset (docs/PLAN.md Phase 5, test 10)."""
 import contextlib
 import io
 import unittest

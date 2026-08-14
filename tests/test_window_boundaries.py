@@ -1,5 +1,5 @@
 """Half-open pass windows and chunked transmission with resume
-(PLAN.md Phase 5, tests 4-6)."""
+(docs/PLAN.md Phase 5, tests 4-6)."""
 import tempfile
 import unittest
 from pathlib import Path

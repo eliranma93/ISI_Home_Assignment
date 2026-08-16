@@ -14,7 +14,7 @@ explained and modified live, in front of reviewers.
 ## Language and toolchain
 
 - **Python 3.11+, standard library only.** No third-party packages, no virtualenv required.
-- Modules used: `csv`, `dataclasses`, `enum`, `abc`, `argparse`, `typing`, `unittest`.
+- Modules used: `csv`, `dataclasses`, `enum`, `abc`, `argparse`, `typing`, `unittest`, `fractions`.
 - Runs as `python main.py`. Console output only.
 
 ## Scope discipline

@@ -2,6 +2,7 @@
 StoragePolicy and DownlinkPolicy so eviction and transmission rank pictures on
 the same scale."""
 from abc import ABC, abstractmethod
+from fractions import Fraction
 
 from satsim.models import Importance, Picture
 from satsim.storage import StoredPicture
@@ -26,10 +27,11 @@ def sorted_ascending_by_density(
 ) -> list[StoredPicture]:
     """Total order by value density (value / size_mb), cheapest first.
 
-    Densities are compared by integer cross multiplication - a.value *
-    b.size_mb vs b.value * a.size_mb - never as a float ratio - with the
-    picture's input row index as the final, unique tie-breaker. This is the
-    one place both StoragePolicy and DownlinkPolicy rank by density, so
+    Densities are compared as exact fractions.Fraction(value, size_mb) -
+    readable as "value over size" while staying exact, since Fraction never
+    rounds the way float division can. The picture's input row index is the
+    final, unique tie-breaker so no two pictures ever compare equal. This is
+    the one place both StoragePolicy and DownlinkPolicy rank by density, so
     eviction and transmission can never drift onto different scales.
     """
     result: list[StoredPicture] = []
@@ -42,10 +44,8 @@ def sorted_ascending_by_density(
 
 
 def _is_less_dense(a: StoredPicture, b: StoredPicture, value_function: ValueFunction, now_min: int) -> bool:
-    value_a = value_function.value_of(a.picture, now_min)
-    value_b = value_function.value_of(b.picture, now_min)
-    left = value_a * b.picture.size_mb
-    right = value_b * a.picture.size_mb
-    if left != right:
-        return left < right
+    density_a = Fraction(value_function.value_of(a.picture, now_min), a.picture.size_mb)
+    density_b = Fraction(value_function.value_of(b.picture, now_min), b.picture.size_mb)
+    if density_a != density_b:
+        return density_a < density_b
     return a.picture.index < b.picture.index

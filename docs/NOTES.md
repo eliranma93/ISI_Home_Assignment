@@ -109,3 +109,7 @@
   event log for sanity-checking. Moved to its own `debug_dump.py` at the repo root once
   it pushed `main.py` over the ~150-line module guideline - kept out of `satsim/` since
   it isn't part of `CLAUDE.md`'s fixed architecture.
+- `tests/test_density_sort.py`: three unit tests added outside Phase 5's fixed list of
+  10, testing `sorted_ascending_by_density` directly rather than through the full
+  CSV-driven pipeline - ascending order, the row-index tie-break on equal density, and
+  that the function doesn't mutate its input.

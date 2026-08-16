@@ -29,7 +29,8 @@ Run the test suite with:
 python -m unittest discover tests
 ```
 
-10 tests, all against synthetic CSV fixtures except the last:
+13 tests. The first 10 (`docs/PLAN.md` Phase 5) run against synthetic CSV fixtures
+except the last:
 
 | # | Covers |
 |---|---|
@@ -46,9 +47,15 @@ python -m unittest discover tests
 
 Tests 1-7 exercise the engine/storage/policies directly via a shared `tests/helpers.py`;
 8-10 go through `main.main()` with stdout/stderr captured, since "exits non-zero" and "a
-clean run" are CLI-level contracts. Not covered: eviction of an already-partially-sent
-picture specifically (see "Evicting a partially-sent picture" below) - that path is
-exercised by construction and the policy's docstring, not by an automated test.
+clean run" are CLI-level contracts.
+
+Three more, added later in `tests/test_density_sort.py`, unit-test
+`sorted_ascending_by_density` directly: ascending order across three distinct densities,
+tie-breaking by row index when two pictures have exactly equal density, and that the
+function returns a new list rather than mutating its input. Not covered anywhere: eviction
+of an already-partially-sent picture specifically (see "Evicting a partially-sent picture"
+below) - that path is exercised by construction and the policy's docstring, not by an
+automated test.
 
 **In VS Code:** `.vscode/launch.json` ships with four ready-to-go debug configurations -
 the real data with the default policies, the real data with both baselines, the real
@@ -138,10 +145,11 @@ minute* - the admission decision is made against the storage state before that
 minute's downlink runs. That ordering is fixed and deliberate, not a bug.
 
 **No floats for value density.** Value density is a ratio (`value / size_mb`), and
-float ratios are where determinism quietly dies. Every density comparison is done
-by integer cross-multiplication - `a.value * b.size_mb` vs `b.value * a.size_mb` -
-never division. Every sort that touches density is a total order, with each
-picture's original CSV row index as the final, unique tie-breaker.
+float ratios are where determinism quietly dies. Every density comparison uses
+`fractions.Fraction(value, size_mb)` instead - exact rational arithmetic, no rounding,
+reads as plainly as `value / size_mb` would. Every sort that touches density is a
+total order, with each picture's original CSV row index as the final, unique
+tie-breaker.
 
 **No quoted-CSV support.** Parsing uses `csv.DictReader` with plain comma-splitting
 semantics. A data value containing a comma would be misread as an extra column.
